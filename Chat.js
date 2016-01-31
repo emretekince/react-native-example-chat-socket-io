@@ -1,6 +1,5 @@
 'use strict';
 
-
 import React from 'react-native'
 import Socket from './Socket';
 import { Icon} from 'react-native-icons';
@@ -14,8 +13,11 @@ import {
 	ListView,
 	Image,
 	DeviceEventEmitter,
-	Animated
+	Animated,
+	AsyncStorage
 } from 'react-native';
+import Dimensions from 'Dimensions';
+var {height, width} = Dimensions.get('window');
 
 class Chat extends Component{
 	constructor(props) {
@@ -24,10 +26,15 @@ class Chat extends Component{
 		this.messages=[];
 		this.ownerID = Math.random().toString(36).slice(2);
 		var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
+		this.username = null;
+		 AsyncStorage.getItem('username', (err, res)=>{
+		 		this.username = res;
+		 })
+
 		this.state = { 
 			dataSource : ds.cloneWithRows(this.messages),
 			pan: new Animated.ValueXY(),
-			headerMsg : 'Welcome!',
+			headerMsg : 'Welcome !' + this.username,
 			headerColor: '#27ae60',
 			headerIcon : 'fontawesome|smile-o'
 		};
@@ -45,7 +52,7 @@ class Chat extends Component{
 		})
 		this.io.onConnect(()=>{
 			this.setState({
-				headerMsg : 'Welcome!',
+				headerMsg : 'Welcome '+this.username+'!',
 				headerColor: '#27ae60',
 				headerIcon : 'fontawesome|smile-o'
 			})
@@ -79,6 +86,11 @@ class Chat extends Component{
 	render() {
 		return(
 			<View style={styles.container}>
+
+			<Image
+			style={{ position: 'absolute', width:width, height:height, top:0, left: 0}}
+			source={require('./bg.jpg')}
+			/>
 
 			<View style={this.getHeaderStyle()}>
 			<Text style={{flex:6, color: '#fff', fontSize: 13, paddingTop: 2}}>{this.state.headerMsg} </Text>
@@ -157,12 +169,13 @@ class Chat extends Component{
 var styles = StyleSheet.create({
 	container:{
 		alignItems: 'center',
-		backgroundColor: "#222",
+		backgroundColor: "transparent",
 		flex:1,
 		paddingTop:50
 	},
 	wrap:{
-		backgroundColor: "#222",
+		backgroundColor: "transparent",
+
 		flex:1,
 		paddingLeft:20,
 		paddingRight:20,
